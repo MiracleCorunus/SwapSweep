@@ -166,6 +166,7 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
 
         // Poke all assets
         primary.poke();
+
         Silo.delegate_poke(silo0);
         Silo.delegate_poke(silo1);
 
@@ -184,6 +185,9 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
             sqrtPriceX96,
             tick
         );
+
+        console.log("Amount 0, Amount 1 => ", amount0, amount1);
+        
         require(shares != 0, "SwapSweep: 0 shares");
         require(amount0 >= params.amount0Min, "SwapSweep: amount0 too low");
         require(amount1 >= params.amount1Min, "SwapSweep: amount1 too low");
@@ -689,6 +693,8 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
                 liquidity
             );
 
+            console.log("amountsForLiquidity", amount0, amount1);
+
             inventory0 += amount0 + a;
             inventory1 += amount1 + b;
         }
@@ -787,10 +793,14 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
                 MIN_TICK,
                 MAX_TICK
             );
+
             uint224 priceX96 = uint224(
                 FullMath.mulDiv(_sqrtPriceX96, _sqrtPriceX96, Q96)
             );
+
             amount0 = FullMath.mulDiv(_amount1Max, Q96, priceX96);
+
+
             amount0 = DENOMINATOR != _targetRatioD
                 ? FullMath.mulDiv(
                     amount0,
@@ -798,6 +808,7 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
                     DENOMINATOR - _targetRatioD
                 )
                 : 0;
+
             if (amount0 < _amount0Max) {
                 amount1 = _amount1Max;
                 shares = amount1;
