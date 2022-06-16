@@ -205,7 +205,11 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
             primary.upper
         );
 
+        console.log("Uni Amounts", amount0Uni, amount1Uni);
         // Place some liquidity in Uniswap
+
+        console.log("Liquidity Amount of Uniswap", primary.liquidityForAmounts(sqrtPriceX96, amount0Uni, amount1Uni));
+
         (amount0Uni, amount1Uni) = primary.deposit(
             primary.liquidityForAmounts(sqrtPriceX96, amount0Uni, amount1Uni)
         );

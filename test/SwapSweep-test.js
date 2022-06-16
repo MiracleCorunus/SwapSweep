@@ -113,6 +113,11 @@ describe('Testing Cases on SwapSweep Contract', function () {
         await this.usdc.connect(deployer).approve(this.swapSweep.address, 100000000000000);
         await this.weth.connect(deployer).approve(this.swapSweep.address, 10000000000);
 
+        await expect(this.swapSweep.reposition()).to.be.reverted;
+
+        await expect(this.swapSweep.connect(david).deposit([100000000000000, 10000000000, 0, 0, 1])).to.be.reverted;
+        await expect(this.swapSweep.connect(deployer).deposit([0, 10000000000, 0, 0, 1])).to.be.reverted;
+
         let tx = await this.swapSweep.connect(deployer).deposit([100000000000000, 10000000000, 0, 0, 1]);
         const { events } = await tx.wait();
 
@@ -128,7 +133,7 @@ describe('Testing Cases on SwapSweep Contract', function () {
         console.log("balance of USDC => ", await this.usdc.balanceOf(deployer.address));
         console.log("balance of WETH => ", await this.weth.balanceOf(deployer.address));
         expect(await this.usdc.balanceOf(deployer.address)).to.be.eq(100000000000000 - amount0);
-        // expect(await this.weth.balanceOf(deployer.address)).to.be.eq(ethers.utils.parseEther("100") - amount1);
+        // expect(await this.weth.balanceOf(deployer.address)).to.be.eq(ethers.utils.toString(ethers.utils.parseEther("100") - amount1).toString());
     });
 
     it('Test Case for depositSilo function', async function () {
@@ -156,6 +161,7 @@ describe('Testing Cases on SwapSweep Contract', function () {
         const timeStamp = (await ethers.provider.getBlock(bcNumber)).timestamp;
         console.log("Current TimeStamp", timeStamp);
 
+        await expect(this.swapSweep.rebalance(timeStamp + 100)).to.be.reverted;
         await this.swapSweep.rebalance(timeStamp + 50);
     })
 
@@ -173,5 +179,16 @@ describe('Testing Cases on SwapSweep Contract', function () {
         console.log("result of withdraw", events[events.length - 1].args);
 
         expect(events[events.length - 1].args.shares, shares);
+    })
+
+    it('Test Case for selfDestruct Funciton', async function () {
+        await expect(this.swapSweep.connect(david).selfDestruct()).to.be.reverted;
+        await this.swapSweep.connect(deployer).selfDestruct();
+
+        expect(await this.usdc.balanceOf(this.swapSweep.address), 0)
+        expect(await this.weth.balanceOf(this.swapSweep.address), 0)
+
+        console.log("USDC Balance of Deployer =>", await this.usdc.balanceOf(deployer.address));
+        console.log("WETH Balance of Deployer =>", await this.weth.balanceOf(deployer.address));
     })
 });
