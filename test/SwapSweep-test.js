@@ -159,6 +159,13 @@ describe('Testing Cases on SwapSweep Contract', function () {
         await this.swapSweep.rebalance(timeStamp + 50);
     })
 
+    it('Test Case for reposition function must be reverted with tick in current uni bounds statement', async function () {
+        const ticks = await this.swapSweep.readTicks();
+        console.log("Ticks Information after rebalance: ", ticks);
+
+        await expect(this.swapSweep.reposition()).to.be.reverted;
+    })
+
     it('Test Case for Withdraw Function', async function () {
         let tx = await this.swapSweep.connect(deployer).withdraw(shares, 0, 0, 1);
 
