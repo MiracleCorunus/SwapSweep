@@ -147,7 +147,16 @@ describe('Testing Cases on SwapSweep Contract', function () {
     })
 
     it('Test Case for rebalance function', async function () {
+        let bcNumber = 0;
+        await ethers.provider.getBlockNumber().then((blockNumber) => {
+            console.log("Current block number: " + blockNumber);
+            bcNumber = blockNumber
+        });
 
+        const timeStamp = (await ethers.provider.getBlock(bcNumber)).timestamp;
+        console.log("Current TimeStamp", timeStamp);
+
+        await this.swapSweep.rebalance(timeStamp + 50);
     })
 
     it('Test Case for Withdraw Function', async function () {
