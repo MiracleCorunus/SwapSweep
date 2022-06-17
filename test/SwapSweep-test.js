@@ -110,15 +110,16 @@ describe('Testing Cases on SwapSweep Contract', function () {
         const silo0Balance0 = await this.silo0.balanceOf(this.swapSweep.address);
         const silo0Balance1 = await this.silo0.balanceOf(deployer.address);
 
-        await this.usdc.connect(deployer).approve(this.swapSweep.address, 100000000000000);
-        await this.weth.connect(deployer).approve(this.swapSweep.address, 10000000000);
+        await this.usdc.connect(deployer).approve(this.swapSweep.address, await this.usdc.balanceOf(deployer.address));
+        await this.weth.connect(deployer).approve(this.swapSweep.address, await this.weth.balanceOf(deployer.address));
 
         await expect(this.swapSweep.reposition()).to.be.reverted;
 
+        /**revert exception of caller is not owner */
         await expect(this.swapSweep.connect(david).deposit([100000000000000, 10000000000, 0, 0, 1])).to.be.reverted;
-        await expect(this.swapSweep.connect(deployer).deposit([0, 10000000000, 0, 0, 1])).to.be.reverted;
 
-        let tx = await this.swapSweep.connect(deployer).deposit([100000000000000, 10000000000, 0, 0, 1]);
+        let tx = await this.swapSweep.connect(deployer).deposit([await this.usdc.balanceOf(deployer.address), await this.weth.balanceOf(deployer.address), 0, 0, 1]);
+        /**Get events from Deposit function */
         const { events } = await tx.wait();
 
         console.log("Events", events[events.length - 1].args);
@@ -161,6 +162,7 @@ describe('Testing Cases on SwapSweep Contract', function () {
         const timeStamp = (await ethers.provider.getBlock(bcNumber)).timestamp;
         console.log("Current TimeStamp", timeStamp);
 
+        /**revert exception of dealine is overflow than maxDeadline */
         await expect(this.swapSweep.rebalance(timeStamp + 100)).to.be.reverted;
         await this.swapSweep.rebalance(timeStamp + 50);
     })
@@ -169,12 +171,20 @@ describe('Testing Cases on SwapSweep Contract', function () {
         const ticks = await this.swapSweep.readTicks();
         console.log("Ticks Information after rebalance: ", ticks);
 
+        /**revert exception for tick is not out of bound */
         await expect(this.swapSweep.reposition()).to.be.reverted;
     })
 
     it('Test Case for Withdraw Function', async function () {
+
+        /**revert exception for caller is not owner */
+        await expect(this.swapSweep.connect(david).withdraw(shares, 0, 0, 1));
+        /**revert exception for shares amount is zero */
+        await expect(this.swapSweep.connect(deployer).withdraw(0, 0, 0, 1));
+
         let tx = await this.swapSweep.connect(deployer).withdraw(shares, 0, 0, 1);
 
+        /**Get events from Withdraw function */
         const { events } = await tx.wait();
         console.log("result of withdraw", events[events.length - 1].args);
 

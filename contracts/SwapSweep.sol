@@ -176,6 +176,8 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
             sqrtPriceX96
         );
 
+        console.log("Inventories => ", inventory0, inventory1);
+
         (shares, amount0, amount1) = _computeLPShares(
             totalSupply,
             inventory0,
@@ -186,7 +188,7 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
             tick
         );
 
-        console.log("Amount 0, Amount 1 => ", amount0, amount1);
+        console.log("Amount 0, Amount 1 => ", amount0, amount1, shares);
         
         require(shares != 0, "SwapSweep: 0 shares");
         require(amount0 >= params.amount0Min, "SwapSweep: amount0 too low");
@@ -205,15 +207,15 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
             primary.upper
         );
 
-        console.log("Uni Amounts", amount0Uni, amount1Uni);
         // Place some liquidity in Uniswap
 
-        console.log("Liquidity Amount of Uniswap", primary.liquidityForAmounts(sqrtPriceX96, amount0Uni, amount1Uni));
+        console.log("Liquidity Amount of Uniswap => ", primary.liquidityForAmounts(sqrtPriceX96, amount0Uni, amount1Uni));
 
         (amount0Uni, amount1Uni) = primary.deposit(
             primary.liquidityForAmounts(sqrtPriceX96, amount0Uni, amount1Uni)
         );
 
+        console.log("Uni Amounts => ", amount0Uni, amount1Uni);
         // Place excess into silos
         uint256 balance0 = amount0 - amount0Uni;
         uint256 balance1 = amount1 - amount1Uni;
@@ -696,8 +698,6 @@ contract SwapSweep is SwapSweepERC20, UniswapHelper, ISwapSweepEvents, Ownable {
                 _sqrtPriceX96,
                 liquidity
             );
-
-            console.log("amountsForLiquidity", amount0, amount1);
 
             inventory0 += amount0 + a;
             inventory1 += amount1 + b;
